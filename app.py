@@ -26,7 +26,7 @@ with st.sidebar:
 # 3. Motor Lógico (Tu System Instruction)
 if st.button("🚀 Calcular Ahorro y Generar Informe"):
     model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash", 
+        model_name="gemini-1.5-flash", 
         system_instruction="""Eres AgroFlow Engine. Reglas innegociables:
         1. Ahorro Gasoil: (Consumo Viejo - (Consumo Viejo * 0.75)) * Hectáreas * 1.10.
         2. Rinde Recuperado: (Rinde * 0.027) * Hectáreas * Precio Soja.
