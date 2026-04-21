@@ -12,7 +12,7 @@ st.markdown("---")
 with st.sidebar:
     st.header("Configuración")
     # Aquí es donde pondrás la llave que sacaste en el Paso 1
-    user_api_key = st.text_input("Pega tu API Key de Google:", type="password")
+    user_api_key = st.text_input("AIzaSyArEbKhkSY4iLrvxhXIQPG128tYVINCulk", type="password")
     
     st.header("Datos del Productor")
     ha = st.number_input("Hectáreas anuales:", value=2500)
