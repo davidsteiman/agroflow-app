@@ -1,36 +1,44 @@
 import streamlit as st
 import google.generativeai as genai
-import os
 
-# 1. Recuperar la clave de forma segura (la configuraremos luego en Streamlit)
-api_key = st.secrets["GOOGLE_API_KEY"]
+# 1. Configuración de Seguridad
+# Esto busca la llave en los "Secrets" de Streamlit para que nadie la vea
+if "GOOGLE_API_KEY" in st.secrets:
+    api_key = st.secrets["GOOGLE_API_KEY"]
+else:
+    st.error("Falta configurar la API Key en Advanced Settings.")
+    st.stop()
 
-# Configuración de la App
+genai.configure(api_key=api_key)
+
+# 2. Interfaz Visual
 st.set_page_config(page_title="AgroFlow 360", page_icon="🚜")
 st.title("🚜 AgroFlow 360")
-st.markdown("### Simulador de Rentabilidad Real - Argentina 2026")
+st.markdown("### Simulador de Rentabilidad Real - Mercado Argentina 2026")
 
-# Entrada de datos del usuario
 with st.sidebar:
     st.header("Datos del Productor")
     ha = st.number_input("Hectáreas anuales", value=2500)
     rinde = st.number_input("Rinde promedio (qq/ha)", value=32.0)
-    consumo = st.number_input("Consumo actual (L/ha)", value=15.0)
+    consumo = st.number_input("Consumo gasoil actual (L/ha)", value=15.0)
+    st.info("Cálculos basados en Gasoil a US$ 1.10/L y mejora de rinde del 2.7%")
 
-# Lógica del motor
-if st.button("🚀 Calcular Rentabilidad"):
-    try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash",
-            system_instruction="Eres AgroFlow Engine. Reglas: Gasoil 1.10 USD/L, Ahorro combustible 25.5%, Rinde recuperado 2.7%. Crédito Banco Provincia Tasa 0% USD a 4 años."
-        )
-        
-        prompt = f"Calculá el ahorro para {ha} ha, rinde {rinde} qq y consumo {consumo} L. Buscá precio soja hoy en Rosario."
-        
-        with st.spinner("Consultando mercados y calculando..."):
+# 3. Motor Lógico (Tu System Instruction)
+if st.button("🚀 Calcular Ahorro y Generar Informe"):
+    model = genai.GenerativeModel(
+        model_name="gemini-2.0-flash", 
+        system_instruction="""Eres AgroFlow Engine. Reglas innegociables:
+        1. Ahorro Gasoil: (Consumo Viejo - (Consumo Viejo * 0.75)) * Hectáreas * 1.10.
+        2. Rinde Recuperado: (Rinde * 0.027) * Hectáreas * Precio Soja.
+        3. Cuota: US$ 820.000 / 4 (Banco Provincia Tasa 0%).
+        Busca el precio de soja Rosario hoy con Google Search."""
+    )
+    
+    prompt = f"Generá informe para {ha} ha, rinde {rinde} qq y consumo {consumo} L. Mostrá el desglose matemático."
+    
+    with st.spinner("Consultando MatbaRofex y calculando..."):
+        try:
             response = model.generate_content(prompt)
             st.markdown(response.text)
-            st.success("Informe generado con éxito.")
-    except Exception as e:
-        st.error(f"Error: {e}. Asegúrate de haber configurado la API Key correctamente.")
+        except Exception as e:
+            st.error(f"Error del motor: {e}")
